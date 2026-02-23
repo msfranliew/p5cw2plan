@@ -38,7 +38,7 @@
       margin-bottom:16px;
     }
     h1{margin:0;font-size:28px;letter-spacing:.2px}
-    .sub{color:var(--muted);margin-top:6px;line-height:1.35;max-width:760px}
+    .sub{color:var(--muted);margin-top:6px;line-height:1.35;max-width:780px}
     .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .pill{
       font-size:12px;color:var(--muted);
@@ -148,6 +148,8 @@
     }
     .example .label{color:var(--muted);font-size:12px;margin-bottom:4px}
     .small{font-size:12px;color:var(--muted)}
+    .foot{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.35}
+
     .score{
       display:flex;align-items:center;gap:10px;flex-wrap:wrap;
       font-size:13px;color:var(--muted);
@@ -163,9 +165,19 @@
     .tag.good{color:var(--good)}
     .tag.warn{color:var(--warn)}
     .tag.bad{color:var(--bad)}
-    ul{margin:8px 0 0 18px;padding:0}
-    li{margin:6px 0;line-height:1.35}
-    .foot{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.35}
+
+    .finalWrap{
+      margin-top:14px;
+      border-top:1px solid rgba(255,255,255,.12);
+      padding-top:14px;
+      display:none;
+    }
+    .finalArea{
+      min-height:180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size:13px;
+      white-space:pre-wrap;
+    }
   </style>
 </head>
 
@@ -174,7 +186,9 @@
   <header>
     <div>
       <h1>Learning From a Mistake — Smart Planner</h1>
-      <div class="sub">Plan first. Then write. Use <b>show, not tell</b> so your reader can feel the moment. When you are done, copy and paste your plan into Padlet.</div>
+      <div class="sub">
+        Fill in each box. Improve with feedback. When you are ready, click <b>Submit / Finalise</b> to generate your final plan in one text box for easy copying to Padlet.
+      </div>
       <div class="pillrow">
         <span class="pill">Body language</span>
         <span class="pill">Thoughts</span>
@@ -196,7 +210,7 @@
     <section class="card">
       <div class="hd">
         <strong>Your Plan</strong>
-        <span class="kicker">Fill in each box. Keep it specific and realistic.</span>
+        <span class="kicker">Feedback appears under each box.</span>
       </div>
       <div class="bd">
 
@@ -204,7 +218,7 @@
           <div>
             <label for="name">Name (required)</label>
             <input id="name" placeholder="e.g. Aiman" />
-            <div class="hint">This appears in the plan you paste into Padlet.</div>
+            <div class="hint">This appears in your final plan.</div>
           </div>
           <div>
             <label for="classId">Class (optional)</label>
@@ -271,14 +285,24 @@
 
         <div class="btnrow">
           <button class="primary" id="analyzeBtn">Check all boxes</button>
-          <button id="copyPadletBtn">Copy for Padlet</button>
-          <button id="openPadletBtn">Open Padlet</button>
+          <button class="primary" id="submitBtn">Submit / Finalise</button>
           <button id="fillExampleBtn">Show example ideas</button>
           <button id="resetBtn">Reset</button>
         </div>
 
+        <!-- FINAL CONSOLIDATED BOX -->
+        <div class="finalWrap" id="finalWrap">
+          <label for="finalPlan">Final plan (copy this into Padlet)</label>
+          <textarea id="finalPlan" class="finalArea" readonly></textarea>
+          <div class="btnrow">
+            <button class="primary" id="copyFinalBtn">Copy final plan</button>
+            <button id="openPadletBtn">Open Padlet</button>
+          </div>
+          <div class="hint">After copying, open Padlet and paste into your post.</div>
+        </div>
+
         <div class="foot">
-          Tip: If you wrote “I was sad/scared/angry/guilty”, the tool will suggest a “show” version under the same box.
+          Tip: Click <b>Submit / Finalise</b> only when you are happy with your plan.
         </div>
       </div>
     </section>
@@ -310,12 +334,12 @@
           <b>Quick reminder</b>
           <ul>
             <li>Learning from a mistake is a <b>process</b>: consequences → repair → change.</li>
-            <li>Show emotions through <b>actions</b>, <b>thoughts</b>, and <b>dialogue</b> (not just emotion words).</li>
+            <li>Show emotions through <b>actions</b>, <b>thoughts</b>, and <b>dialogue</b>.</li>
           </ul>
         </div>
 
         <div class="foot">
-          Teacher note: This is rule-based feedback (not AI). It helps students revise quickly before writing.
+          Teacher note: This tool gives rule-based feedback. It helps students revise quickly before writing.
         </div>
       </div>
     </aside>
@@ -329,7 +353,7 @@
   const PADLET_LINK = "https://padlet.com/francine_liew_lien/cw-2-writing-plans-d4gzeqpmn4dii2bh";
 
   // =========================
-  // Banks (school-friendly)
+  // Banks
   // =========================
   const SHOW_TOOLKIT = [
     "Body language: clenched fists, shaky hands, stiff shoulders",
@@ -339,25 +363,19 @@
     "Actions: hesitated, fidgeted, avoided eye contact, swallowed hard",
     "Setting: where were you? classroom? corridor? home?"
   ];
-
   const EMOTIONS = [
     "regret","panic","embarrassment","dread","guilt","anxiety",
     "relief","determination","disappointment","shame","nervousness"
   ];
-
   const BODY = [
     "avoided eye contact","twisted my fingers","bit my lip","swallowed hard",
     "heart thumped","palms were sweaty","voice trembled","cheeks burned",
     "legs felt weak","stared at the floor","hands shook","could not breathe properly"
   ];
-
-  // Common “tell” words students overuse
   const TELL_WORDS = [
     "sad","happy","angry","scared","afraid","nervous","guilty","embarrassed",
     "shy","excited","worried","upset","ashamed","confused","frustrated"
   ];
-
-  // Simple action verbs to nudge specificity
   const ACTION_VERBS = [
     "copied","copy","cheated","cheat","lied","lie","stole","steal","took","take",
     "shouted","shout","pushed","push","ignored","ignore","broke","break",
@@ -372,23 +390,19 @@
   function escapeHTML(s){
     return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
-
   function normalize(s){
     return (s||"").toLowerCase().trim();
   }
-
   function wordCount(s){
     const t = (s||"").trim();
     if(!t) return 0;
     return t.split(/\s+/).length;
   }
-
   function firstSnippet(s, n=120){
     const t = (s||"").trim().replace(/\s+/g," ");
     if(!t) return "";
     return t.length > n ? t.slice(0,n) + "…" : t;
   }
-
   function findTellWords(text){
     const t = normalize(text);
     const found = [];
@@ -398,30 +412,18 @@
     }
     return [...new Set(found)];
   }
-
   function hasAnyActionVerb(text){
     const t = normalize(text);
     return ACTION_VERBS.some(v => new RegExp("\\b"+v+"\\b").test(t));
   }
-
   function pickOne(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
   function perspectivePronouns(){
-    const p = $("perspective").value; // first/third
+    const p = $("perspective").value;
     if(p === "third"){
-      return {
-        subj: "he",
-        obj: "him",
-        poss: "his",
-        bePast: "was"
-      };
+      return { subj:"he", obj:"him", poss:"his", bePast:"was" };
     }
-    return {
-      subj: "I",
-      obj: "me",
-      poss: "my",
-      bePast: "was"
-    };
+    return { subj:"I", obj:"me", poss:"my", bePast:"was" };
   }
 
   function setFeedback(elId, status, lines, exampleObj){
@@ -482,7 +484,6 @@
           chip.textContent = "Copied!";
           setTimeout(()=> chip.textContent = old, 700);
         }catch(e){
-          // fallback: insert into key moment
           const moment = $("moment");
           moment.value = (moment.value.trim() ? moment.value.trim()+"\n" : "") + txt;
         }
@@ -492,16 +493,15 @@
   }
 
   // =========================
-  // Example generators (rule-based)
+  // Rule-based example builders
   // =========================
   function showUpgradeFromEmotion(emotionWord){
-    // Simple mapping to concrete showing details
     const P = perspectivePronouns();
     const base = {
       scared: `${P.poss} throat felt dry as ${P.subj} stood frozen on the spot.`,
       afraid: `${P.poss} heart thumped loudly, and ${P.subj} could not bring ${P.obj}self to speak.`,
       nervous: `${P.poss} fingers kept fidgeting as ${P.subj} avoided eye contact.`,
-      guilty: `${P.poss} stomach twisted as ${P.subj} replayed ${P.poss} mistake again and again.`,
+      guilty: `${P.poss} stomach twisted as ${P.subj} replayed the mistake again and again.`,
       embarrassed: `${P.poss} cheeks burned, and ${P.subj} wished the floor would swallow ${P.obj} up.`,
       ashamed: `${P.poss} gaze stayed glued to the floor, heavy with regret.`,
       angry: `${P.poss} jaw tightened, and ${P.subj} snapped without thinking.`,
@@ -511,31 +511,17 @@
       confused: `${P.subj} stared at the situation, trying to make sense of what had just happened.`,
       frustrated: `${P.subj} let out a shaky breath and clenched ${P.poss} fists.`
     };
-    return base[emotionWord] || `${P.subj} showed it through ${P.poss} actions and body language, not just emotion words.`;
+    return base[emotionWord] || `${P.subj} showed it through actions and body language, not just emotion words.`;
   }
 
   function improveMistake(studentText){
-    const P = perspectivePronouns();
-    const s = normalize(studentText);
-    // If they already have a clear action, just nudge specificity
     if(hasAnyActionVerb(studentText) && wordCount(studentText) >= 8){
-      return {
-        status: "good",
-        lines: ["Your mistake sounds specific. Good start.", "If you can, add where it happened (classroom/corridor/home) or who was affected."],
-        example: null,
-        point: 1
-      };
+      return { status:"good", lines:["Your mistake sounds specific. Good start.","If you can, add where it happened (classroom/corridor/home) or who was affected."], example:null, point:1 };
     }
-
+    const P = perspectivePronouns();
     const snippet = firstSnippet(studentText) || "I made a mistake.";
-    // Generic template suggestion based on likely school context
-    const tryLine = `${P.subj} ${P.bePast} careless and chose the easy way out: ${P.subj.toLowerCase()==="i"?"I":"He/She"} did not prepare, so ${P.subj.toLowerCase()==="i"?"I":"he/she"} copied during a test to avoid getting into trouble.`;
-    return {
-      status: "bad",
-      lines: ["Your mistake is too vague right now.", "Write the exact action you did. Start with: “I ___ because ___.”"],
-      example: { student: snippet, try: tryLine.replace("He/She", P.subj === "I" ? "I" : "he/she") },
-      point: 0
-    };
+    const tryLine = `${P.subj} made a wrong choice: ${P.subj==="I"?"I":"He/She"} __________ because ${P.subj==="I"?"I":"he/she"} __________.`;
+    return { status:"bad", lines:["Your mistake is too vague right now.","Write the exact action you did. Start with: “I ___ because ___.”"], example:{student:snippet, try:tryLine}, point:0 };
   }
 
   function improveMoment(studentText){
@@ -545,22 +531,13 @@
     const snippet = firstSnippet(studentText) || "I was nervous.";
 
     if(wc >= 25 && found.length <= 1){
-      return {
-        status: "good",
-        lines: ["Your key moment has showing details. Keep it vivid.", "Try adding one short line of dialogue to make it feel real."],
-        example: null,
-        point: 1
-      };
+      return { status:"good", lines:["Your key moment has showing details. Keep it vivid.","Try adding one short line of dialogue to make it feel real."], example:null, point:1 };
     }
 
-    // Build a tailored “try” line:
-    // If they used tell words, convert one into show detail
     const emotion = found[0] || "nervous";
     const showLine = showUpgradeFromEmotion(emotion);
-
-    const addSense = `The air felt ${pickOne(["warm and heavy","cold against the skin","too quiet","filled with the scratch of pencils"])}, and ${P.subj.toLowerCase()==="i"?"I":"he"} noticed ${pickOne(["every small sound","the teacher’s footsteps","the glare of the lights","the whispers behind"]) }.`;
+    const addSense = `The air felt ${pickOne(["warm and heavy","cold against the skin","too quiet","filled with the scratch of pencils"])}, and ${P.subj} noticed ${pickOne(["every small sound","the teacher’s footsteps","the glare of the lights","the whispers behind"]) }.`;
     const addAction = `${P.subj} ${pickOne(["swallowed hard","kept fidgeting","forced a small smile","froze for a second"]) } before ${pickOne(["making the wrong choice","admitting the truth","looking away","continuing anyway"]) }.`;
-
     const tryLine = `${showLine} ${addSense} ${addAction}`;
 
     const status = wc >= 18 ? "warn" : "bad";
@@ -568,10 +545,8 @@
       status === "bad" ? "Your key moment needs more showing details." : "You have some detail, but it can be more vivid.",
       "Add at least 2: body language, thoughts, dialogue, senses."
     ];
-    if(found.length >= 1){
-      lines.push(`You used emotion words (${found.join(", ")}). Replace at least one with “show” details.`);
-    }
-    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+    if(found.length >= 1) lines.push(`You used emotion words (${found.join(", ")}). Replace at least one with “show” details.`);
+    return { status, lines, example:{student:snippet, try:tryLine}, point: status==="warn" ? 0.5 : 0 };
   }
 
   function improveConsequences(studentText){
@@ -580,12 +555,7 @@
     const snippet = firstSnippet(studentText) || "I got into trouble.";
 
     if(wc >= 18){
-      return {
-        status: "good",
-        lines: ["Your consequences are developed.", "Make sure you show reactions from at least one other person (friend/teacher/parent)."],
-        example: null,
-        point: 1
-      };
+      return { status:"good", lines:["Your consequences are developed.","Make sure you show reactions from at least one other person (friend/teacher/parent)."], example:null, point:1 };
     }
 
     const tryLine =
@@ -600,12 +570,7 @@
         "I could not undo it, and that made my chest tighten."
       ])}`;
 
-    return {
-      status: "bad",
-      lines: ["Your consequences are too short.", "Show: Who was affected? What changed? What did you have to face?"],
-      example: { student: snippet, try: tryLine },
-      point: 0
-    };
+    return { status:"bad", lines:["Your consequences are too short.","Show: Who was affected? What changed? What did you have to face?"], example:{student:snippet, try:tryLine}, point:0 };
   }
 
   function improveRepair(studentText){
@@ -613,16 +578,11 @@
     const t = normalize(studentText);
     const snippet = firstSnippet(studentText) || "I said sorry.";
 
-    const hasAction = /(apolog|apology|admit|admitted|confess|confessed|owned up|told the truth|returned|repaid|fixed|replace|replaced|stayed back|practised|practiced|helped|cleaned|wrote)/i.test(studentText);
+    const hasAction = /(apolog|apology|admit|admitted|confess|confessed|owned up|told the truth|returned|repaid|fixed|replace|replaced|stayed back|practis)/i.test(studentText);
     const onlyPromise = /(next time|from now on|i will|i won't)/i.test(t) && wc < 18;
 
     if(wc >= 18 && (hasAction || !onlyPromise)){
-      return {
-        status: "good",
-        lines: ["You included actions to make things right. Good.", "Make sure the action links to your mistake (repair matches the problem)."],
-        example: null,
-        point: 1
-      };
+      return { status:"good", lines:["You included actions to make things right. Good.","Make sure the action links to your mistake (repair matches the problem)."], example:null, point:1 };
     }
 
     const P = perspectivePronouns();
@@ -642,7 +602,7 @@
       status === "bad" ? "You need more actions (not just promises)." : "Good start, but add more concrete actions.",
       "Add 2–3 specific actions: apologise, return, fix, practise, tell the truth, make amends."
     ];
-    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+    return { status, lines, example:{student:snippet, try:tryLine}, point: status==="warn" ? 0.5 : 0 };
   }
 
   function improveLesson(studentText){
@@ -650,38 +610,29 @@
     const snippet = firstSnippet(studentText) || "I learnt my lesson.";
 
     if(wc >= 10 && wc <= 30){
-      return {
-        status: "good",
-        lines: ["Your lesson is clear.", "Make sure it matches your story (trust, honesty, responsibility, friendship, self-control)."],
-        example: null,
-        point: 1
-      };
+      return { status:"good", lines:["Your lesson is clear.","Make sure it matches your story (trust, honesty, responsibility, friendship, self-control)."], example:null, point:1 };
     }
 
-    const P = perspectivePronouns();
-    // Build lesson around common themes
     const theme = pickOne([
       "trust can take a long time to build, but it can break in seconds",
       "doing the right thing is harder, but it is always worth it",
       "a mistake hurts others, not just myself",
       "responsibility means owning up, even when it is uncomfortable"
     ]);
-
-    const tryLine = `${P.subj==="I"?"That day, I learnt":"In the end, he/she learnt"} that ${theme}.`;
+    const tryLine = `That day, I learnt that ${theme}.`;
 
     const status = wc >= 6 ? "warn" : "bad";
     const lines = [
       status === "bad" ? "Your lesson is too short or too vague." : "Your lesson is close, but it can be clearer.",
       "Aim for 1–2 sentences: “I learnt that ___ because ___.”"
     ];
-    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+    return { status, lines, example:{student:snippet, try:tryLine}, point: status==="warn" ? 0.5 : 0 };
   }
 
   // =========================
-  // Overall analysis
+  // Analyse all boxes + overall meter
   // =========================
   function analyzeAll(){
-    // Per-box feedback
     const r1 = improveMistake($("mistake").value);
     setFeedback("fb_mistake", r1.status, r1.lines, r1.example);
 
@@ -697,7 +648,7 @@
     const r5 = improveLesson($("lesson").value);
     setFeedback("fb_lesson", r5.status, r5.lines, r5.example);
 
-    // Score checks (10 total)
+    // Score (10 checks)
     const fields = {
       mistake: $("mistake").value,
       moment: $("moment").value,
@@ -711,47 +662,69 @@
     let score = 0;
     const TOTAL = 10;
 
-    // 1 mistake specific
     if(wordCount(fields.mistake) >= 8 && hasAnyActionVerb(fields.mistake)) score++;
-
-    // 2 moment has enough words
     if(wordCount(fields.moment) >= 25) score++;
-
-    // 3 moment not too “tell”
     if(findTellWords(fields.moment).length <= 1) score++;
-
-    // 4 consequences developed
     if(wordCount(fields.consequences) >= 18) score++;
-
-    // 5 repair developed
     if(wordCount(fields.repair) >= 18) score++;
-
-    // 6 repair includes actions
     if(/(apolog|admit|confess|owned up|told the truth|returned|repaid|fixed|replaced|stayed back|practis)/i.test(fields.repair)) score++;
-
-    // 7 lesson length okay
     if(wordCount(fields.lesson) >= 10 && wordCount(fields.lesson) <= 30) score++;
 
-    // 8 perspective consistency (simple)
     const hasI = /\bi\b|\bmy\b|\bme\b/.test(t);
     const hasHeShe = /\bhe\b|\bshe\b|\bhis\b|\bher\b/.test(t);
     const p = $("perspective").value;
     const perspectiveOk = (p==="first" && !hasHeShe) || (p==="third" && !hasI) || (!hasI && !hasHeShe);
     if(perspectiveOk) score++;
 
-    // 9 growth cue
     if(/learnt|learned|realised|realized|understood|changed|determined|decided|responsibility|trust|honesty/.test(t)) score++;
-
-    // 10 concrete detail cue
     if(/classroom|canteen|corridor|hall|home|bus|desk|worksheet|test|teacher|principal|friend|mum|mom|dad|bag|wallet|phone|book/.test(t)) score++;
 
     setMeter(score, TOTAL);
+    return { score, TOTAL };
   }
 
   // =========================
-  // Padlet submission helpers
+  // Submit/Finalise -> One consolidated textbox
   // =========================
-  async function copyForPadlet(){
+  function buildFinalPlanText(){
+    const name = ($("name").value || "").trim();
+    const classId = ($("classId").value || "").trim();
+    const indexNo = ($("indexNo").value || "").trim();
+    const perspective = $("perspective").value === "first" ? "First person (I)" : "Third person (He/She)";
+
+    const titleLine = [classId, indexNo, name].filter(Boolean).join(" ").trim() || name || "Name";
+
+    return `📌 Learning From a Mistake — Writing Plan
+
+Post Title:
+${titleLine}
+
+Name: ${name || "-"}
+Class/Index: ${[classId, indexNo].filter(Boolean).join(" ") || "-" }
+Narrator: ${perspective}
+
+1) Mistake (specific action)
+${($("mistake").value || "").trim()}
+
+2) Key moment (SHOW it)
+${($("moment").value || "").trim()}
+
+3) Consequences (what changed?)
+${($("consequences").value || "").trim()}
+
+4) Making things right (actions)
+${($("repair").value || "").trim()}
+
+5) Lesson learnt (insight)
+${($("lesson").value || "").trim()}
+`;
+  }
+
+  function submitFinalise(){
+    // Always analyze first
+    const { score, TOTAL } = analyzeAll();
+
+    // Basic required check
     const name = ($("name").value || "").trim();
     if(!name){
       alert("Please fill in your name first.");
@@ -759,46 +732,33 @@
       return;
     }
 
-    const classId = ($("classId").value || "").trim();
-    const indexNo = ($("indexNo").value || "").trim();
-    const perspective = $("perspective").value === "first" ? "First person (I)" : "Third person (He/She)";
+    // Build the final plan and show the final box
+    const text = buildFinalPlanText();
+    $("finalPlan").value = text;
 
-    const titleLine = [classId, indexNo, name].filter(Boolean).join(" ").trim();
+    $("finalWrap").style.display = "block";
+    $("finalWrap").scrollIntoView({behavior:"smooth", block:"start"});
 
-    const text =
-`📌 Learning From a Mistake — Writing Plan
+    // Gentle nudge if quality is low (but still allow)
+    if(score < 5){
+      alert(`Your plan is still quite short (${score}/${TOTAL}). You can still submit, but try adding more details first (especially Box 2 and Box 3).`);
+    }
+  }
 
-Post Title (copy into Padlet title box if needed):
-${titleLine || name}
-
-Name: ${name}
-Class/Index: ${[classId, indexNo].filter(Boolean).join(" ") || "-" }
-Narrator: ${perspective}
-
-1) Mistake (specific action)
-${$("mistake").value.trim()}
-
-2) Key moment (SHOW it)
-${$("moment").value.trim()}
-
-3) Consequences (what changed?)
-${$("consequences").value.trim()}
-
-4) Making things right (actions)
-${$("repair").value.trim()}
-
-5) Lesson learnt (insight)
-${$("lesson").value.trim()}
-`;
-
+  async function copyFinalPlan(){
+    const text = $("finalPlan").value || "";
+    if(!text.trim()){
+      alert("Click Submit / Finalise first to generate your final plan.");
+      return;
+    }
     try{
       await navigator.clipboard.writeText(text);
-      const btn = $("copyPadletBtn");
+      const btn = $("copyFinalBtn");
       const old = btn.textContent;
-      btn.textContent = "Copied! Paste into Padlet";
-      setTimeout(()=> btn.textContent = old, 1200);
+      btn.textContent = "Copied!";
+      setTimeout(()=> btn.textContent = old, 900);
     }catch(e){
-      alert("Copy did not work on this browser. Please highlight and copy manually.");
+      alert("Copy did not work on this browser. Please highlight the final plan and copy manually.");
     }
   }
 
@@ -806,6 +766,9 @@ ${$("lesson").value.trim()}
     window.open(PADLET_LINK, "_blank", "noopener,noreferrer");
   }
 
+  // =========================
+  // Demo + Reset
+  // =========================
   function fillExample(){
     $("name").value = $("name").value || "Aiman";
     $("classId").value = $("classId").value || "P5 Respect";
@@ -820,30 +783,42 @@ ${$("lesson").value.trim()}
 
   function resetAll(){
     ["name","classId","indexNo","mistake","moment","consequences","repair","lesson"].forEach(id => $(id).value = "");
+    $("finalWrap").style.display = "none";
+    $("finalPlan").value = "";
     ["fb_mistake","fb_moment","fb_consequences","fb_repair","fb_lesson"].forEach(id => {
-      $(id).innerHTML = `<div class="fbTitle">${$(id).querySelector(".fbTitle")?.textContent || "Feedback"}</div><div class="small">Type something first. Feedback will appear here.</div>`;
+      const title = id === "fb_mistake" ? "Feedback for Box 1"
+        : id === "fb_moment" ? "Feedback for Box 2"
+        : id === "fb_consequences" ? "Feedback for Box 3"
+        : id === "fb_repair" ? "Feedback for Box 4"
+        : "Feedback for Box 5";
+      $(id).innerHTML = `<div class="fbTitle">${title}</div><div class="small">Type something first. Feedback will appear here.</div>`;
     });
     setMeter(0,10);
   }
 
+  // =========================
   // Live checking (debounced)
+  // =========================
   let tmr = null;
   function scheduleAnalyze(){
     clearTimeout(tmr);
     tmr = setTimeout(analyzeAll, 650);
   }
 
-  // Init
+  // Init chips
   renderChips("toolkit", SHOW_TOOLKIT);
   renderChips("emotions", EMOTIONS);
   renderChips("body", BODY);
 
+  // Buttons
   $("analyzeBtn").addEventListener("click", analyzeAll);
-  $("copyPadletBtn").addEventListener("click", copyForPadlet);
+  $("submitBtn").addEventListener("click", submitFinalise);
+  $("copyFinalBtn").addEventListener("click", copyFinalPlan);
   $("openPadletBtn").addEventListener("click", openPadlet);
   $("fillExampleBtn").addEventListener("click", fillExample);
   $("resetBtn").addEventListener("click", resetAll);
 
+  // Inputs -> live feedback
   ["mistake","moment","consequences","repair","lesson","perspective"].forEach(id=>{
     $(id).addEventListener("input", scheduleAnalyze);
     $(id).addEventListener("change", scheduleAnalyze);

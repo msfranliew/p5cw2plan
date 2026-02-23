@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Learning From a Mistake — Smart Planner</title>
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#141a2c;
+      --card: rgba(255,255,255,.06);
+      --border: rgba(255,255,255,.14);
+      --text:#eef2ff;
+      --muted:#b6c1dc;
+      --good:#86efac;
+      --warn:#fde68a;
+      --bad:#fca5a5;
+      --accent:#7dd3fc;
+      --accent2:#a78bfa;
+      --shadow: 0 14px 32px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 700px at 20% 10%, rgba(125,211,252,.18), transparent 60%),
+        radial-gradient(900px 700px at 85% 30%, rgba(167,139,250,.16), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      padding:24px;
+    }
+    .wrap{max-width:1050px;margin:0 auto}
+    header{
+      display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+      margin-bottom:16px;
+    }
+    h1{margin:0;font-size:28px;letter-spacing:.2px}
+    .sub{color:var(--muted);margin-top:6px;line-height:1.35;max-width:760px}
+    .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .pill{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--border);
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hd{
+      padding:14px 16px;
+      background: linear-gradient(90deg, rgba(125,211,252,.12), rgba(167,139,250,.10));
+      border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;
+    }
+    .hd strong{font-size:14px;letter-spacing:.2px}
+    .kicker{font-size:12px;color:var(--muted);margin-top:2px}
+    .bd{padding:14px 16px}
+
+    label{display:block;font-weight:800;font-size:13px;margin:14px 0 8px}
+    textarea, input, select{
+      width:100%;
+      background:rgba(8,12,26,.55);
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--text);
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:15px;
+      outline:none;
+    }
+    textarea{min-height:86px;resize:vertical;line-height:1.4}
+    input{height:44px}
+    select{height:44px}
+    .hint{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.35}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > *{flex:1}
+
+    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      font-size:14px;
+    }
+    button.primary{
+      background: linear-gradient(90deg, rgba(125,211,252,.26), rgba(167,139,250,.22));
+      border-color: rgba(255,255,255,.22);
+    }
+    button:active{transform:translateY(1px)}
+
+    .mini{
+      font-size:12px;color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);
+      padding:10px 12px;border-radius:14px;
+      background:rgba(0,0,0,.10);
+    }
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .chip{
+      font-size:12px;border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.05);
+      padding:6px 10px;border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip:hover{border-color:rgba(255,255,255,.28)}
+    .split{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    }
+    @media (max-width: 560px){ .split{grid-template-columns:1fr} }
+
+    .feedbackBox{
+      margin-top:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.10);
+      padding:10px 12px;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .fbTitle{font-weight:800;color:var(--muted);margin-bottom:6px;font-size:12px}
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+    .example{
+      margin-top:8px;
+      border-left:3px solid rgba(125,211,252,.45);
+      padding-left:10px;
+      color:var(--text);
+    }
+    .example .label{color:var(--muted);font-size:12px;margin-bottom:4px}
+    .small{font-size:12px;color:var(--muted)}
+    .score{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+      font-size:13px;color:var(--muted);
+    }
+    .meter{
+      height:10px;width:220px;border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+    }
+    .bar{height:100%;width:0%}
+    .tag{font-size:12px;border-radius:999px;padding:4px 10px;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+    .tag.good{color:var(--good)}
+    .tag.warn{color:var(--warn)}
+    .tag.bad{color:var(--bad)}
+    ul{margin:8px 0 0 18px;padding:0}
+    li{margin:6px 0;line-height:1.35}
+    .foot{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.35}
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Learning From a Mistake — Smart Planner</h1>
+      <div class="sub">Plan first. Then write. Use <b>show, not tell</b> so your reader can feel the moment. When you are done, copy and paste your plan into Padlet.</div>
+      <div class="pillrow">
+        <span class="pill">Body language</span>
+        <span class="pill">Thoughts</span>
+        <span class="pill">Dialogue</span>
+        <span class="pill">Senses</span>
+        <span class="pill">Consequences → Change</span>
+      </div>
+    </div>
+
+    <div class="score">
+      <div class="meter" aria-label="planner quality meter"><div class="bar" id="bar"></div></div>
+      <span id="scoreTag" class="tag warn">Working on it</span>
+      <span class="small" id="scoreText">0 / 10 checks met</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: PLANNING -->
+    <section class="card">
+      <div class="hd">
+        <strong>Your Plan</strong>
+        <span class="kicker">Fill in each box. Keep it specific and realistic.</span>
+      </div>
+      <div class="bd">
+
+        <div class="row">
+          <div>
+            <label for="name">Name (required)</label>
+            <input id="name" placeholder="e.g. Aiman" />
+            <div class="hint">This appears in the plan you paste into Padlet.</div>
+          </div>
+          <div>
+            <label for="classId">Class (optional)</label>
+            <input id="classId" placeholder="e.g. P5 Respect" />
+            <div class="hint">Optional, but it helps your teacher.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="indexNo">Index number (optional)</label>
+            <input id="indexNo" placeholder="e.g. 12" />
+            <div class="hint">Optional, but it helps your teacher.</div>
+          </div>
+          <div>
+            <label for="perspective">Narrator</label>
+            <select id="perspective">
+              <option value="first">First person (I)</option>
+              <option value="third">Third person (He/She)</option>
+            </select>
+            <div class="hint">Choose one and stay consistent.</div>
+          </div>
+        </div>
+
+        <label for="mistake">1) What was your mistake? (1–2 sentences)</label>
+        <textarea id="mistake" placeholder="Example: I copied my friend’s answers during a spelling test because I did not study."></textarea>
+        <div class="hint">Avoid vague mistakes like “I was bad.” Tell exactly what you did.</div>
+        <div class="feedbackBox" id="fb_mistake">
+          <div class="fbTitle">Feedback for Box 1</div>
+          <div class="small">Type something first. Feedback will appear here.</div>
+        </div>
+
+        <label for="moment">2) The key moment (SHOW it)</label>
+        <textarea id="moment" placeholder="Show the moment the mistake happened or was discovered. What did you do/say? What did you notice?"></textarea>
+        <div class="hint">Use body language, thoughts, dialogue, and senses.</div>
+        <div class="feedbackBox" id="fb_moment">
+          <div class="fbTitle">Feedback for Box 2</div>
+          <div class="small">Type something first. Feedback will appear here.</div>
+        </div>
+
+        <label for="consequences">3) Consequences (What happened because of it?)</label>
+        <textarea id="consequences" placeholder="Who was affected? What changed? What did you have to face?"></textarea>
+        <div class="hint">This topic is about the journey — show the struggle, not just the event.</div>
+        <div class="feedbackBox" id="fb_consequences">
+          <div class="fbTitle">Feedback for Box 3</div>
+          <div class="small">Type something first. Feedback will appear here.</div>
+        </div>
+
+        <label for="repair">4) Making things right (actions, not promises)</label>
+        <textarea id="repair" placeholder="What did you do to make amends? Apologise? Return something? Practise? Tell the truth?"></textarea>
+        <div class="hint">Specific actions show real change.</div>
+        <div class="feedbackBox" id="fb_repair">
+          <div class="fbTitle">Feedback for Box 4</div>
+          <div class="small">Type something first. Feedback will appear here.</div>
+        </div>
+
+        <label for="lesson">5) Lesson learnt (insight)</label>
+        <textarea id="lesson" placeholder="Example: I learnt that trust takes a long time to build, but it can break in seconds."></textarea>
+        <div class="hint">One clear lesson. Not a list.</div>
+        <div class="feedbackBox" id="fb_lesson">
+          <div class="fbTitle">Feedback for Box 5</div>
+          <div class="small">Type something first. Feedback will appear here.</div>
+        </div>
+
+        <div class="btnrow">
+          <button class="primary" id="analyzeBtn">Check all boxes</button>
+          <button id="copyPadletBtn">Copy for Padlet</button>
+          <button id="openPadletBtn">Open Padlet</button>
+          <button id="fillExampleBtn">Show example ideas</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+
+        <div class="foot">
+          Tip: If you wrote “I was sad/scared/angry/guilty”, the tool will suggest a “show” version under the same box.
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: SUPPORT -->
+    <aside class="card">
+      <div class="hd">
+        <strong>Word Banks (Click to copy)</strong>
+        <span class="kicker">Use these to improve your “show” details.</span>
+      </div>
+      <div class="bd">
+        <div class="mini">
+          <b>Show Toolkit</b>
+          <div class="chips" id="toolkit"></div>
+        </div>
+
+        <div style="margin-top:12px" class="split">
+          <div class="mini">
+            <b>Emotion bank</b>
+            <div class="chips" id="emotions"></div>
+          </div>
+          <div class="mini">
+            <b>Body language bank</b>
+            <div class="chips" id="body"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" class="mini">
+          <b>Quick reminder</b>
+          <ul>
+            <li>Learning from a mistake is a <b>process</b>: consequences → repair → change.</li>
+            <li>Show emotions through <b>actions</b>, <b>thoughts</b>, and <b>dialogue</b> (not just emotion words).</li>
+          </ul>
+        </div>
+
+        <div class="foot">
+          Teacher note: This is rule-based feedback (not AI). It helps students revise quickly before writing.
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+  // =========================
+  // Settings
+  // =========================
+  const PADLET_LINK = "https://padlet.com/francine_liew_lien/cw-2-writing-plans-d4gzeqpmn4dii2bh";
+
+  // =========================
+  // Banks (school-friendly)
+  // =========================
+  const SHOW_TOOLKIT = [
+    "Body language: clenched fists, shaky hands, stiff shoulders",
+    "Thoughts: I told myself..., I wondered if..., My mind raced...",
+    "Dialogue: “...” (short and realistic)",
+    "Senses: smell of..., buzz of..., warm/cold air, bright lights",
+    "Actions: hesitated, fidgeted, avoided eye contact, swallowed hard",
+    "Setting: where were you? classroom? corridor? home?"
+  ];
+
+  const EMOTIONS = [
+    "regret","panic","embarrassment","dread","guilt","anxiety",
+    "relief","determination","disappointment","shame","nervousness"
+  ];
+
+  const BODY = [
+    "avoided eye contact","twisted my fingers","bit my lip","swallowed hard",
+    "heart thumped","palms were sweaty","voice trembled","cheeks burned",
+    "legs felt weak","stared at the floor","hands shook","could not breathe properly"
+  ];
+
+  // Common “tell” words students overuse
+  const TELL_WORDS = [
+    "sad","happy","angry","scared","afraid","nervous","guilty","embarrassed",
+    "shy","excited","worried","upset","ashamed","confused","frustrated"
+  ];
+
+  // Simple action verbs to nudge specificity
+  const ACTION_VERBS = [
+    "copied","copy","cheated","cheat","lied","lie","stole","steal","took","take",
+    "shouted","shout","pushed","push","ignored","ignore","broke","break",
+    "forgot","forget","lost","lose","hid","hide","teased","tease","hurt","damage"
+  ];
+
+  // =========================
+  // Helpers
+  // =========================
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHTML(s){
+    return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function normalize(s){
+    return (s||"").toLowerCase().trim();
+  }
+
+  function wordCount(s){
+    const t = (s||"").trim();
+    if(!t) return 0;
+    return t.split(/\s+/).length;
+  }
+
+  function firstSnippet(s, n=120){
+    const t = (s||"").trim().replace(/\s+/g," ");
+    if(!t) return "";
+    return t.length > n ? t.slice(0,n) + "…" : t;
+  }
+
+  function findTellWords(text){
+    const t = normalize(text);
+    const found = [];
+    for(const w of TELL_WORDS){
+      const re = new RegExp("\\b" + w + "\\b","g");
+      if(re.test(t)) found.push(w);
+    }
+    return [...new Set(found)];
+  }
+
+  function hasAnyActionVerb(text){
+    const t = normalize(text);
+    return ACTION_VERBS.some(v => new RegExp("\\b"+v+"\\b").test(t));
+  }
+
+  function pickOne(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function perspectivePronouns(){
+    const p = $("perspective").value; // first/third
+    if(p === "third"){
+      return {
+        subj: "he",
+        obj: "him",
+        poss: "his",
+        bePast: "was"
+      };
+    }
+    return {
+      subj: "I",
+      obj: "me",
+      poss: "my",
+      bePast: "was"
+    };
+  }
+
+  function setFeedback(elId, status, lines, exampleObj){
+    const box = $(elId);
+    const titleMap = {
+      fb_mistake: "Feedback for Box 1",
+      fb_moment: "Feedback for Box 2",
+      fb_consequences: "Feedback for Box 3",
+      fb_repair: "Feedback for Box 4",
+      fb_lesson: "Feedback for Box 5"
+    };
+    const cls = status === "good" ? "good" : status === "warn" ? "warn" : "bad";
+    let html = `<div class="fbTitle">${titleMap[elId] || "Feedback"}</div>`;
+    html += `<div class="${cls}"><b>${status === "good" ? "✓" : status === "warn" ? "⚠" : "✗"}</b> ${escapeHTML(lines[0] || "")}</div>`;
+    for(let i=1;i<lines.length;i++){
+      html += `<div class="small" style="margin-top:6px">${escapeHTML(lines[i])}</div>`;
+    }
+    if(exampleObj && exampleObj.student && exampleObj.try){
+      html += `
+        <div class="example">
+          <div class="label">Example based on what you wrote</div>
+          <div class="small"><b>Instead of:</b> “${escapeHTML(exampleObj.student)}”</div>
+          <div style="margin-top:6px"><b>Try:</b> “${escapeHTML(exampleObj.try)}”</div>
+        </div>
+      `;
+    }
+    box.innerHTML = html;
+  }
+
+  function setMeter(score, total){
+    const pct = Math.round((score/total)*100);
+    $("bar").style.width = pct + "%";
+    $("bar").style.background =
+      pct >= 75 ? "rgba(134,239,172,.85)" :
+      pct >= 45 ? "rgba(253,230,138,.85)" :
+      "rgba(252,165,165,.85)";
+
+    $("scoreText").textContent = `${score} / ${total} checks met`;
+    const tag = $("scoreTag");
+    tag.classList.remove("good","warn","bad");
+    if(pct >= 75){ tag.classList.add("good"); tag.textContent = "Ready to write"; }
+    else if(pct >= 45){ tag.classList.add("warn"); tag.textContent = "Almost there"; }
+    else { tag.classList.add("bad"); tag.textContent = "Needs more detail"; }
+  }
+
+  function renderChips(containerId, items){
+    const el = $(containerId);
+    el.innerHTML = "";
+    items.forEach(txt => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = txt;
+      chip.title = "Click to copy";
+      chip.addEventListener("click", async () => {
+        try{
+          await navigator.clipboard.writeText(txt);
+          const old = chip.textContent;
+          chip.textContent = "Copied!";
+          setTimeout(()=> chip.textContent = old, 700);
+        }catch(e){
+          // fallback: insert into key moment
+          const moment = $("moment");
+          moment.value = (moment.value.trim() ? moment.value.trim()+"\n" : "") + txt;
+        }
+      });
+      el.appendChild(chip);
+    });
+  }
+
+  // =========================
+  // Example generators (rule-based)
+  // =========================
+  function showUpgradeFromEmotion(emotionWord){
+    // Simple mapping to concrete showing details
+    const P = perspectivePronouns();
+    const base = {
+      scared: `${P.poss} throat felt dry as ${P.subj} stood frozen on the spot.`,
+      afraid: `${P.poss} heart thumped loudly, and ${P.subj} could not bring ${P.obj}self to speak.`,
+      nervous: `${P.poss} fingers kept fidgeting as ${P.subj} avoided eye contact.`,
+      guilty: `${P.poss} stomach twisted as ${P.subj} replayed ${P.poss} mistake again and again.`,
+      embarrassed: `${P.poss} cheeks burned, and ${P.subj} wished the floor would swallow ${P.obj} up.`,
+      ashamed: `${P.poss} gaze stayed glued to the floor, heavy with regret.`,
+      angry: `${P.poss} jaw tightened, and ${P.subj} snapped without thinking.`,
+      upset: `${P.poss} eyes stung, and ${P.subj} blinked hard to hold everything in.`,
+      worried: `${P.poss} mind raced with “what if” thoughts, and ${P.subj} could not focus.`,
+      sad: `${P.poss} chest felt tight, and ${P.subj} forced a small nod as ${P.subj} struggled to speak.`,
+      confused: `${P.subj} stared at the situation, trying to make sense of what had just happened.`,
+      frustrated: `${P.subj} let out a shaky breath and clenched ${P.poss} fists.`
+    };
+    return base[emotionWord] || `${P.subj} showed it through ${P.poss} actions and body language, not just emotion words.`;
+  }
+
+  function improveMistake(studentText){
+    const P = perspectivePronouns();
+    const s = normalize(studentText);
+    // If they already have a clear action, just nudge specificity
+    if(hasAnyActionVerb(studentText) && wordCount(studentText) >= 8){
+      return {
+        status: "good",
+        lines: ["Your mistake sounds specific. Good start.", "If you can, add where it happened (classroom/corridor/home) or who was affected."],
+        example: null,
+        point: 1
+      };
+    }
+
+    const snippet = firstSnippet(studentText) || "I made a mistake.";
+    // Generic template suggestion based on likely school context
+    const tryLine = `${P.subj} ${P.bePast} careless and chose the easy way out: ${P.subj.toLowerCase()==="i"?"I":"He/She"} did not prepare, so ${P.subj.toLowerCase()==="i"?"I":"he/she"} copied during a test to avoid getting into trouble.`;
+    return {
+      status: "bad",
+      lines: ["Your mistake is too vague right now.", "Write the exact action you did. Start with: “I ___ because ___.”"],
+      example: { student: snippet, try: tryLine.replace("He/She", P.subj === "I" ? "I" : "he/she") },
+      point: 0
+    };
+  }
+
+  function improveMoment(studentText){
+    const wc = wordCount(studentText);
+    const found = findTellWords(studentText);
+    const P = perspectivePronouns();
+    const snippet = firstSnippet(studentText) || "I was nervous.";
+
+    if(wc >= 25 && found.length <= 1){
+      return {
+        status: "good",
+        lines: ["Your key moment has showing details. Keep it vivid.", "Try adding one short line of dialogue to make it feel real."],
+        example: null,
+        point: 1
+      };
+    }
+
+    // Build a tailored “try” line:
+    // If they used tell words, convert one into show detail
+    const emotion = found[0] || "nervous";
+    const showLine = showUpgradeFromEmotion(emotion);
+
+    const addSense = `The air felt ${pickOne(["warm and heavy","cold against the skin","too quiet","filled with the scratch of pencils"])}, and ${P.subj.toLowerCase()==="i"?"I":"he"} noticed ${pickOne(["every small sound","the teacher’s footsteps","the glare of the lights","the whispers behind"]) }.`;
+    const addAction = `${P.subj} ${pickOne(["swallowed hard","kept fidgeting","forced a small smile","froze for a second"]) } before ${pickOne(["making the wrong choice","admitting the truth","looking away","continuing anyway"]) }.`;
+
+    const tryLine = `${showLine} ${addSense} ${addAction}`;
+
+    const status = wc >= 18 ? "warn" : "bad";
+    const lines = [
+      status === "bad" ? "Your key moment needs more showing details." : "You have some detail, but it can be more vivid.",
+      "Add at least 2: body language, thoughts, dialogue, senses."
+    ];
+    if(found.length >= 1){
+      lines.push(`You used emotion words (${found.join(", ")}). Replace at least one with “show” details.`);
+    }
+    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+  }
+
+  function improveConsequences(studentText){
+    const wc = wordCount(studentText);
+    const P = perspectivePronouns();
+    const snippet = firstSnippet(studentText) || "I got into trouble.";
+
+    if(wc >= 18){
+      return {
+        status: "good",
+        lines: ["Your consequences are developed.", "Make sure you show reactions from at least one other person (friend/teacher/parent)."],
+        example: null,
+        point: 1
+      };
+    }
+
+    const tryLine =
+      `${P.subj} had to face the consequences. ${pickOne([
+        "My friend pulled away and refused to talk to me.",
+        "The teacher’s expression hardened as she called me aside.",
+        "My parents’ disappointed silence was worse than any scolding."
+      ]).replace(/^My /, P.subj==="I"?"My ": `${P.poss.charAt(0).toUpperCase()+P.poss.slice(1)} `)}
+      ${pickOne([
+        "The room felt smaller, and the mistake suddenly felt much bigger.",
+        "For the first time, I realised my actions affected others.",
+        "I could not undo it, and that made my chest tighten."
+      ])}`;
+
+    return {
+      status: "bad",
+      lines: ["Your consequences are too short.", "Show: Who was affected? What changed? What did you have to face?"],
+      example: { student: snippet, try: tryLine },
+      point: 0
+    };
+  }
+
+  function improveRepair(studentText){
+    const wc = wordCount(studentText);
+    const t = normalize(studentText);
+    const snippet = firstSnippet(studentText) || "I said sorry.";
+
+    const hasAction = /(apolog|apology|admit|admitted|confess|confessed|owned up|told the truth|returned|repaid|fixed|replace|replaced|stayed back|practised|practiced|helped|cleaned|wrote)/i.test(studentText);
+    const onlyPromise = /(next time|from now on|i will|i won't)/i.test(t) && wc < 18;
+
+    if(wc >= 18 && (hasAction || !onlyPromise)){
+      return {
+        status: "good",
+        lines: ["You included actions to make things right. Good.", "Make sure the action links to your mistake (repair matches the problem)."],
+        example: null,
+        point: 1
+      };
+    }
+
+    const P = perspectivePronouns();
+    const tryLine = `${P.subj} took responsibility without making excuses. ${pickOne([
+      "I admitted what I did and apologised properly.",
+      "I returned what I took and explained the truth.",
+      "I owned up to the mistake and accepted the punishment."
+    ]).replace(/^I /, P.subj==="I"?"I ": `${P.subj.charAt(0).toUpperCase()+P.subj.slice(1)} `)}
+    ${pickOne([
+      "Then, I stayed back to fix the mess I caused.",
+      "After that, I made a plan and followed it for a whole week.",
+      "I also gave the other person space and worked to earn trust back."
+    ])}`;
+
+    const status = (wc >= 10 && !onlyPromise) ? "warn" : "bad";
+    const lines = [
+      status === "bad" ? "You need more actions (not just promises)." : "Good start, but add more concrete actions.",
+      "Add 2–3 specific actions: apologise, return, fix, practise, tell the truth, make amends."
+    ];
+    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+  }
+
+  function improveLesson(studentText){
+    const wc = wordCount(studentText);
+    const snippet = firstSnippet(studentText) || "I learnt my lesson.";
+
+    if(wc >= 10 && wc <= 30){
+      return {
+        status: "good",
+        lines: ["Your lesson is clear.", "Make sure it matches your story (trust, honesty, responsibility, friendship, self-control)."],
+        example: null,
+        point: 1
+      };
+    }
+
+    const P = perspectivePronouns();
+    // Build lesson around common themes
+    const theme = pickOne([
+      "trust can take a long time to build, but it can break in seconds",
+      "doing the right thing is harder, but it is always worth it",
+      "a mistake hurts others, not just myself",
+      "responsibility means owning up, even when it is uncomfortable"
+    ]);
+
+    const tryLine = `${P.subj==="I"?"That day, I learnt":"In the end, he/she learnt"} that ${theme}.`;
+
+    const status = wc >= 6 ? "warn" : "bad";
+    const lines = [
+      status === "bad" ? "Your lesson is too short or too vague." : "Your lesson is close, but it can be clearer.",
+      "Aim for 1–2 sentences: “I learnt that ___ because ___.”"
+    ];
+    return { status, lines, example: { student: snippet, try: tryLine }, point: status === "warn" ? 0.5 : 0 };
+  }
+
+  // =========================
+  // Overall analysis
+  // =========================
+  function analyzeAll(){
+    // Per-box feedback
+    const r1 = improveMistake($("mistake").value);
+    setFeedback("fb_mistake", r1.status, r1.lines, r1.example);
+
+    const r2 = improveMoment($("moment").value);
+    setFeedback("fb_moment", r2.status, r2.lines, r2.example);
+
+    const r3 = improveConsequences($("consequences").value);
+    setFeedback("fb_consequences", r3.status, r3.lines, r3.example);
+
+    const r4 = improveRepair($("repair").value);
+    setFeedback("fb_repair", r4.status, r4.lines, r4.example);
+
+    const r5 = improveLesson($("lesson").value);
+    setFeedback("fb_lesson", r5.status, r5.lines, r5.example);
+
+    // Score checks (10 total)
+    const fields = {
+      mistake: $("mistake").value,
+      moment: $("moment").value,
+      consequences: $("consequences").value,
+      repair: $("repair").value,
+      lesson: $("lesson").value
+    };
+    const combined = Object.values(fields).join("\n").trim();
+    const t = normalize(combined);
+
+    let score = 0;
+    const TOTAL = 10;
+
+    // 1 mistake specific
+    if(wordCount(fields.mistake) >= 8 && hasAnyActionVerb(fields.mistake)) score++;
+
+    // 2 moment has enough words
+    if(wordCount(fields.moment) >= 25) score++;
+
+    // 3 moment not too “tell”
+    if(findTellWords(fields.moment).length <= 1) score++;
+
+    // 4 consequences developed
+    if(wordCount(fields.consequences) >= 18) score++;
+
+    // 5 repair developed
+    if(wordCount(fields.repair) >= 18) score++;
+
+    // 6 repair includes actions
+    if(/(apolog|admit|confess|owned up|told the truth|returned|repaid|fixed|replaced|stayed back|practis)/i.test(fields.repair)) score++;
+
+    // 7 lesson length okay
+    if(wordCount(fields.lesson) >= 10 && wordCount(fields.lesson) <= 30) score++;
+
+    // 8 perspective consistency (simple)
+    const hasI = /\bi\b|\bmy\b|\bme\b/.test(t);
+    const hasHeShe = /\bhe\b|\bshe\b|\bhis\b|\bher\b/.test(t);
+    const p = $("perspective").value;
+    const perspectiveOk = (p==="first" && !hasHeShe) || (p==="third" && !hasI) || (!hasI && !hasHeShe);
+    if(perspectiveOk) score++;
+
+    // 9 growth cue
+    if(/learnt|learned|realised|realized|understood|changed|determined|decided|responsibility|trust|honesty/.test(t)) score++;
+
+    // 10 concrete detail cue
+    if(/classroom|canteen|corridor|hall|home|bus|desk|worksheet|test|teacher|principal|friend|mum|mom|dad|bag|wallet|phone|book/.test(t)) score++;
+
+    setMeter(score, TOTAL);
+  }
+
+  // =========================
+  // Padlet submission helpers
+  // =========================
+  async function copyForPadlet(){
+    const name = ($("name").value || "").trim();
+    if(!name){
+      alert("Please fill in your name first.");
+      $("name").focus();
+      return;
+    }
+
+    const classId = ($("classId").value || "").trim();
+    const indexNo = ($("indexNo").value || "").trim();
+    const perspective = $("perspective").value === "first" ? "First person (I)" : "Third person (He/She)";
+
+    const titleLine = [classId, indexNo, name].filter(Boolean).join(" ").trim();
+
+    const text =
+`📌 Learning From a Mistake — Writing Plan
+
+Post Title (copy into Padlet title box if needed):
+${titleLine || name}
+
+Name: ${name}
+Class/Index: ${[classId, indexNo].filter(Boolean).join(" ") || "-" }
+Narrator: ${perspective}
+
+1) Mistake (specific action)
+${$("mistake").value.trim()}
+
+2) Key moment (SHOW it)
+${$("moment").value.trim()}
+
+3) Consequences (what changed?)
+${$("consequences").value.trim()}
+
+4) Making things right (actions)
+${$("repair").value.trim()}
+
+5) Lesson learnt (insight)
+${$("lesson").value.trim()}
+`;
+
+    try{
+      await navigator.clipboard.writeText(text);
+      const btn = $("copyPadletBtn");
+      const old = btn.textContent;
+      btn.textContent = "Copied! Paste into Padlet";
+      setTimeout(()=> btn.textContent = old, 1200);
+    }catch(e){
+      alert("Copy did not work on this browser. Please highlight and copy manually.");
+    }
+  }
+
+  function openPadlet(){
+    window.open(PADLET_LINK, "_blank", "noopener,noreferrer");
+  }
+
+  function fillExample(){
+    $("name").value = $("name").value || "Aiman";
+    $("classId").value = $("classId").value || "P5 Respect";
+    $("indexNo").value = $("indexNo").value || "12";
+    $("mistake").value = "I copied my friend’s answers during a spelling test because I did not study and I panicked.";
+    $("moment").value = "My eyes flicked to his paper again and again. The classroom felt unusually quiet, except for the scratch of pencils. My fingers trembled as I wrote faster, pretending to focus on my own work. “Stop looking,” my friend whispered through clenched teeth. My cheeks burned.";
+    $("consequences").value = "After the test, my friend yanked his paper away and refused to talk to me. When my teacher called me aside, my stomach tightened. I had to face my parents too, and the disappointment in my mother’s voice stung more than any punishment.";
+    $("repair").value = "I admitted what I did and apologised to my friend without making excuses. I accepted the consequences and stayed back after school to redo the spelling corrections properly. For the next week, I practised every day and worked to earn my friend’s trust back.";
+    $("lesson").value = "That day, I learnt that honesty and trust matter more than a score. A shortcut can cost you a friendship.";
+    analyzeAll();
+  }
+
+  function resetAll(){
+    ["name","classId","indexNo","mistake","moment","consequences","repair","lesson"].forEach(id => $(id).value = "");
+    ["fb_mistake","fb_moment","fb_consequences","fb_repair","fb_lesson"].forEach(id => {
+      $(id).innerHTML = `<div class="fbTitle">${$(id).querySelector(".fbTitle")?.textContent || "Feedback"}</div><div class="small">Type something first. Feedback will appear here.</div>`;
+    });
+    setMeter(0,10);
+  }
+
+  // Live checking (debounced)
+  let tmr = null;
+  function scheduleAnalyze(){
+    clearTimeout(tmr);
+    tmr = setTimeout(analyzeAll, 650);
+  }
+
+  // Init
+  renderChips("toolkit", SHOW_TOOLKIT);
+  renderChips("emotions", EMOTIONS);
+  renderChips("body", BODY);
+
+  $("analyzeBtn").addEventListener("click", analyzeAll);
+  $("copyPadletBtn").addEventListener("click", copyForPadlet);
+  $("openPadletBtn").addEventListener("click", openPadlet);
+  $("fillExampleBtn").addEventListener("click", fillExample);
+  $("resetBtn").addEventListener("click", resetAll);
+
+  ["mistake","moment","consequences","repair","lesson","perspective"].forEach(id=>{
+    $(id).addEventListener("input", scheduleAnalyze);
+    $(id).addEventListener("change", scheduleAnalyze);
+  });
+
+  setMeter(0,10);
+</script>
+</body>
+</html>
